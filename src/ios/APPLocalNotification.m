@@ -481,10 +481,6 @@ UNNotificationPresentationOptions const OptionAlert = UNNotificationPresentation
 {
     UNNotificationRequest* toast = notification.request;
 
-    [_delegate userNotificationCenter:center
-              willPresentNotification:notification
-                withCompletionHandler:handler];
-
     if ([toast.trigger isKindOfClass:UNPushNotificationTrigger.class])
         return;
 
@@ -512,10 +508,6 @@ UNNotificationPresentationOptions const OptionAlert = UNNotificationPresentation
           withCompletionHandler:(void (^)(void))handler
 {
     UNNotificationRequest* toast = response.notification.request;
-
-    [_delegate userNotificationCenter:center
-       didReceiveNotificationResponse:response
-                withCompletionHandler:handler];
 
     handler();
 
@@ -559,8 +551,6 @@ UNNotificationPresentationOptions const OptionAlert = UNNotificationPresentation
 {
     eventQueue = [[NSMutableArray alloc] init];
     _center    = [UNUserNotificationCenter currentNotificationCenter];
-    _delegate  = _center.delegate;
-
     _center.delegate = self;
     [_center registerGeneralNotificationCategory];
 
