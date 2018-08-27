@@ -503,6 +503,52 @@ UNNotificationPresentationOptions const OptionAlert = UNNotificationPresentation
     }
 }
 
+/**
+ * Called to let your app know which action was selected by the user for a given
+ * notification.
+ */
+- (void) userNotificationCenter:(UNUserNotificationCenter *)center
+ didReceiveNotificationResponse:(UNNotificationResponse *)response
+          withCompletionHandler:(void (^)(void))handler
+{
+    UNNotificationRequest* toast = response.notification.request;
+
+    [_delegate userNotificationCenter:center
+       didReceiveNotificationResponse:response
+                withCompletionHandler:handler];
+
+    handler();
+
+    if ([toast.trigger isKindOfClass:UNPushNotificationTrigger.class])
+        return;
+
+    NSMutableDictionary* data = [[NSMutableDictionary alloc] init];
+    NSString* action          = response.actionIdentifier;
+    NSString* event           = action;
+
+    if ([action isEqualToString:UNNotificationDefaultActionIdentifier]) {
+        event = @"click";
+    } else
+    if ([action isEqualToString:UNNotificationDismissActionIdentifier]) {
+        event = @"clear";
+    }
+
+    if (!deviceready && [event isEqualToString:@"click"]) {
+        _launchDetails = @[toast.options.id, event];
+    }
+
+    if (![event isEqualToString:@"clear"]) {
+        [self fireEvent:@"clear" notification:toast];
+    }
+
+    if ([response isKindOfClass:UNTextInputNotificationResponse.class]) {
+        [data setObject:((UNTextInputNotificationResponse*) response).userText
+                 forKey:@"text"];
+    }
+
+    [self fireEvent:event notification:toast data:data];
+}
+
 #pragma mark -
 #pragma mark Life Cycle
 
